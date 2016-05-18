@@ -1,0 +1,45 @@
+{% load staticfiles %}
+{% load pipeline %}
+
+<!DOCTYPE html>
+<html lang="en"{% block htmlAttr %}{% endblock %}>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>{% block overridePageTitle %}My2009{% block pageTitle %}{% endblock %}{% endblock %}</title>
+
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Ruda:400,700,900">
+        {% stylesheet 'app' %}
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+
+        <script src="{% static 'bower_components/underscore/underscore-min.js' %}"></script>
+
+        <script src="{% static 'bower_components/moment/moment.js' %}"></script>
+        <script src="{% static 'bower_components/fullcalendar/dist/fullcalendar.min.js' %}"></script>
+        
+        <script src="{% static 'bower_components/angular/angular.min.js' %}"></script>
+        <script src="{% static 'bower_components/angular-cookies/angular-cookies.min.js' %}"></script>
+        <script src="{% static 'bower_components/angular-ui-router/release/angular-ui-router.min.js' %}"></script>
+        <script src="{% static 'bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>
+        <script src="{% static 'bower_components/angular-ui-indeterminate/dist/indeterminate.min.js' %}"></script>
+        <script src="{% static 'bower_components/angular-ui-calendar/src/calendar.js' %}"></script>
+        <script src="{% static 'bower_components/angular-file-upload/dist/angular-file-upload.min.js' %}"></script>
+        <script src="{% static 'bower_components/angular-google-chart/ng-google-chart.js' %}"></script>
+
+        {% block pageScriptHead %}{% endblock %}
+    </head>
+
+    <body{% block bodyAttr %}{% endblock %}>
+        {% block pageContent %}{% endblock %}
+    </body>
+</html>

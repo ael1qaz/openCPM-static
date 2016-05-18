@@ -1,0 +1,38 @@
+<div class="modal-header">
+    <h3 class="modal-title">Edit profile</h3>
+</div>
+<div class="modal-body">
+    <form name="form" class="form-horizontal">
+        <div class="form-group">
+            <div class="col-sm-3">
+                <label class="control-label" for="user-edit-profile-phone">Phone number</label>
+            </div>
+            <div class="col-sm-9">
+                <input class="form-control" type="text" maxlength="12" ng-model="profile.phone_number" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3">
+                <label class="control-label" for="user-edit-profile-phone">Car</label>
+            </div>
+            <div class="col-sm-9">
+                <select class="form-control" ng-model="profile.car" required>
+                    <option value="Y">Yes</option>
+                    <option value="N">No</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3">
+                <label class="control-label" for="user-edit-profile-courseload">My course load for the term is</label>
+            </div>
+            <div class="col-sm-9">
+                <select class="form-control" ng-model="profile.course_load" ng-options="item[0] as item[1] for item in courseLoadOptions track by item[0]" required></select>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="ok(form)" ng-disabled="form.$invalid">Update</button>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

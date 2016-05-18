@@ -1,0 +1,74 @@
+<script type="text/ng-template" id="task-list-task.html">
+    <div class="task-header" ng-init="isOpen = task.subtasks.length > 0" ng-class="task.due ? 'task-due-'+task.due : ''">
+        <div class="task-header-right pull-right">
+            <em task-assignees="task"></em>
+        </div>
+        <div class="task-header-left">
+            <span class="task-header-checkbox">
+                <a href class="app-checkbox" ng-class="{disabled: !task._permissions.update, checked: task.state == 'completed' }" ng-click="task._permissions.update && toggleTaskCompleted(task)">
+                    <span class="app-checkbox-glyph-unchecked fa fa-square-o"></span>
+                    <span class="app-checkbox-glyph-checked fa fa-check-square-o"></span>
+                </a>
+            </span>
+            <a href ng-click="isOpen = !isOpen; toggleTask(task, isOpen)">
+                <span class="glyphicon" ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></span>
+            </a>
+            <span class="task-title-sp">
+                <a href ng-click="openTask(task)" ng-attr-title="{{ task.name }}">{{ task.name }}</a>
+            </span>
+        </div>
+    </div>
+    <div class="task-body" ng-show="isOpen">
+        <p class="text-info" ng-if="task.subtasks && task.subtasks.length == 0">This task has no subtasks.</p>
+        <ul class="task-list list-unstyled">
+            <li class="task" ng-repeat="task in task.subtasks" ng-class="{ 'task-done': task.state == 'completed' }" ng-include="'task-list-task.html'">
+            </li>
+            <li class="more-tasks" ng-if="task._hasPartialSubtasks">
+                <a href ng-click="moreTasks(task)">More...</a>
+            </li>
+        </ul>
+        <button class="btn btn-success btn-sm" ng-click="newTask(task)" ng-if="task._permissions.update">New subtask</button>
+    </div>
+</script>
+
+<section class="content-panel">
+    <div class="panel-heading">
+        <div class="pull-left">
+            <h5>
+                <span class="fa fa-tasks"></span>
+                <span>{{ title }}</span>
+            </h5>
+        </div>
+        <div class="pull-right">
+            <label>
+                <input type="checkbox" ng-model="showCompleted">
+                Show completed
+            </label>
+        </div>
+        <br>
+    </div>
+    <div class="panel-body no-lr-padding">
+        <spinner ng-show="loading"></spinner>
+        <div ng-hide="loading">
+            <div class="task-content">
+                <p class="text-info" ng-if="tasks.length == 0">
+                    <span ng-if="!filterUserOwned">No tasks assigned.</span>
+                    <span ng-if="filterUserOwned">No tasks owned.</span>
+                </p>
+                <ul class="task-list list-unstyled">
+                    <li class="task" ng-repeat="task in tasks" ng-class="{ 'task-done': task.state == 'completed' }"
+                        ng-init="completed = task.state == 'completed'" ng-include="'task-list-task.html'">
+                    </li>
+                </ul>
+            </div>
+            <div class="lr-padding">
+                <button class="btn btn-success btn-sm" ng-if="(filterUserOwned && filterUserOwned.id == $parent.currentUser.id) || (!filterTaskforce && !filterUser && !filterCustom)" ng-click="newTask()">New task</button>
+                <div class="pull-right">
+                    <button ng-if="showCustomize" ng-click="onCustomize()" class="btn btn-default">
+                        <span class="fa fa-cog"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

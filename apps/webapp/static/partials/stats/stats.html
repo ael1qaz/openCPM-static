@@ -1,0 +1,37 @@
+<h1>Stats</h1>
+<hr>
+
+<div class="row mt">
+    <div class="col-md-12">
+        <div class="content-panel" ng-controller="StatsTfUserCtrl">
+            <div class="panel-heading">
+                <h2>{{ title }}</h2>
+            </div>
+            <div class="panel-body">
+                <div ng-if="chartReady" google-chart chart="chartObject" style="width: 100%; height: 500px"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="content-panel" ng-controller="StatsTeamCtrl">
+            <div class="panel-heading">
+                <h2>{{ team.name }} team</h2>
+            </div>
+            <div class="panel-body">
+                <div ng-if="chartReady" google-chart chart="chartObject" style="width: 100%; height: 500px"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="content-panel" ng-controller="StatsGlobalCtrl">
+            <div class="panel-heading">
+                <h2>Full course overview</h2>
+            </div>
+            <div class="panel-body">
+                <div ng-if="chartReady" google-chart chart="chartObject" style="width: 100%; height: 500px"></div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,101 @@
+<div class="row mt">
+    <div class="col-md-7 col-lg-5">
+        <calendar
+            filter-user="navUser.id != currentUser.id ? navUser : null"
+            filter-taskforce="navTaskforce"
+            filter-custom="navUser.id == currentUser.id ? calendarFilterModel : null"
+            show-customize="navUser.id == currentUser.id"
+            on-customize="openCustomizeCalendar()"
+            ng-if="!loadingCalendar"
+        />
+        <div class="mt">
+            <task-list
+                filter-user="currentUser"
+                ng-if="navUser.id == currentUser.id"
+            />
+        </div>
+    </div>
+
+    <div class="col-md-5 col-lg-4">
+        <task-list
+            filter-user="navUser.id != currentUser.id ? navUser : null"
+            filter-taskforce="navTaskforce"
+            filter-custom="navUser.id == currentUser.id ? tasksFilterModel : null"
+            show-customize="navUser.id == currentUser.id"
+            on-customize="openCustomizeTasks()"
+            ng-if="!loadingTasks"
+        />
+    </div>
+
+    <div class="col-md-12 col-lg-3 ds">
+        <div ng-controller="NotificationsController">
+            <h3 class="bg-team">Notifications
+                <span class="badge badge-team" ng-show="unreadNts.length > 0">{{ unreadNts.length }}</span>
+            </h3>
+            <spinner ng-show="loading" />
+            <div ng-hide="loading">
+                <!-- Unread notifications -->
+                <div class="desc" ng-repeat="nt in unreadNts" ng-class="{ 'fade': !nt.unread }">
+                    <div class="thumb">
+                        <span class="badge bg-theme"><span class="fa fa-clock-o"></span></span>
+                    </div>
+                    <div class="details">
+                        <p>
+                            <span class="text-muted"><time-from-now time="nt.timestamp" /></span><br>
+                            <span notification-text="nt" />
+                        </p>
+                        <p>
+                            <a href ng-click="markRead(nt)" ng-if="nt.unread">Mark as read</a>
+                            <a href ng-click="markUnread(nt)" ng-if="!nt.unread">Mark as unread</a>
+                        </p>
+                    </div>
+                </div>
+                <p ng-if="unreadNts.length == 0">You have no unread notifications.</p>
+
+                <!-- Read notifications -->
+                <hr ng-if="readNts.length > 0">
+                <div class="desc" ng-repeat="nt in readNts" ng-class="{ 'fade': !nt.unread }">
+                    <div class="thumb">
+                        <span class="badge bg-theme"><span class="fa fa-clock-o"></span></span>
+                    </div>
+                    <div class="details">
+                        <p>
+                            <span class="text-muted"><time-from-now time="nt.timestamp" /></span><br>
+                            <span notification-text="nt" />
+                        </p>
+                        <p>
+                            <a href ng-click="markRead(nt)" ng-if="nt.unread">Mark as read</a>
+                            <a href ng-click="markUnread(nt)" ng-if="!nt.unread">Mark as unread</a>
+                        </p>
+                    </div>
+                </div>
+
+                <a href ng-click="more(10)">More...</a>
+            </div>
+        </div>
+
+        <div ng-controller="TeamMembersListCtrl">
+            <h3 class="bg-team">Team Members</h3>
+            <div class="desc" ng-repeat="user in users | filter:userFilter | orderBy:['-is_online', 'last_name']">
+                <div class="thumb">
+                    <img class="img-circle" height="40" user-picture="user" size="small">
+                </div>
+                <div class="details">
+                    <p>
+                        <a ui-sref="users.detail({ userId: user.id })">{{ user.full_name }}</a><br/>
+                        <span class="text-success" ng-if="user.is_online">
+                            <span class="fa fa-circle"></span>
+                            Online
+                        </span>
+                        <span class="text-muted" ng-if="!user.is_online">
+                            <span class="fa fa-circle-o"></span>
+                            Offline
+                        </span>
+                    </p>
+                </div>
+            </div>
+            <a href ng-click="more()" ng-if="!showAll">More...</a>
+            <a href ng-click="less()" ng-if="showAll">Less...</a>
+        </div>
+    </div>
+</div>

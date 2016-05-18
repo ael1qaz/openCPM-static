@@ -1,0 +1,328 @@
+{% extends 'webapp/page.html' %}
+
+{% load staticfiles %}
+{% load pipeline %}
+
+{% block htmlAttr %} ng-app="app"{% endblock %}
+{% block bodyAttr %} ng-controller="AppCtrl"{% endblock %}
+{% block overridePageTitle %}{% verbatim %}{{ currentUser.activeCourse.title }}{% endverbatim %}{% endblock %}
+
+{% block pageScriptHead %}
+    {% javascript 'app' %}
+{% endblock %}
+
+{% block pageContent %}
+<section id="container" ng-class="teamColor ? 'team-'+teamColor : null">
+    <!-- Top bar -->
+    <header class="header black-bg" ng-controller="NavFilterCtrl">
+        <div class="sidebar-toggle-box">
+            <div class="fa fa-bars" tooltip="Toggle navigation" tooltip-placement="right" ng-click="toggleSidebar()"></div>
+        </div>
+        <!-- Logo -->
+        {% verbatim %}
+        <a ui-sref="dashboard" class="logo hidden-xs">
+            <img ng-if="currentUser.activeCourse.logo" ng-src="{{ currentUser.activeCourse.logo }}">
+            <span ng-if="!currentUser.activeCourse.logo">{{ currentUser.activeCourse.title }}</span>
+        </a>
+        {% endverbatim %}
+
+        {% verbatim %}
+        <!-- Notifications -->
+        <div class="nav notify-row" id="top_menu" ng-controller="NotificationsController">
+            <ul class="nav top-menu">
+                <li class="dropdown">
+                    <a ui-sref="dashboard">
+                        <span class="fa fa-globe"></span>
+                        <span class="badge badge-team" ng-show="unreadNts.length > 0">{{ unreadNts.length }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Nav Filter -->
+        <div class="nav-filter">
+            <a ng-click="selectHome()" ng-class="{ selected: homeSelected }" href class="home-button">
+                <span class="fa fa-home"></span>
+            </a>
+            &raquo;
+            <span class="dropdown">
+                <a href class="dropdown-toggle">{{ homeSelected ? '...' : activeTeam.name }}</a>
+                <ul class="dropdown-menu" ng-visible="teamSelectOpen">
+                    <li ng-repeat="team in teams">
+                        <a href ng-click="selectTeam(team)">{{ team.name }}</a>
+                    </li>
+                </ul>
+            </span>
+            <span ng-hide="homeSelected">
+                &raquo;
+                <span class="dropdown">
+                    <a href class="dropdown-toggle">
+                        <span ng-if="activeUser">{{ activeUser.full_name }}</span>
+                        <span ng-if="!activeUser && !(taskforces.length > 1)">...</span>
+                        <span ng-if="taskforces.length > 1">{{ taskforces[0].active.name }}</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li ng-if="users[0].id == currentUser.id">
+                            <a href ng-click="selectUser(users[0])">{{ users[0].full_name }}</a>
+                        </li>
+                        <li ng-if="users[0].id == currentUser.id" class="divider"></li>
+
+                        <li class="dropdown-header">Team members</li>
+                        <li ng-repeat="user in users">
+                            <a href ng-click="selectUser(user)" ng-if="!($first && user.id == currentUser.id)">{{ user.full_name }}</a>
+                        </li>
+
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Task forces</li>
+                        <li ng-repeat="taskforce in taskforces[0].list">
+                            <a href ng-click="selectTaskforce(taskforce, 0)">{{ taskforce.name }}</a>
+                        </li>
+                    </ul>
+                </span>
+                <span ng-repeat="level in taskforces" ng-if="!$first && level.list.length > 0">
+                    &raquo;
+                    <span class="dropdown">
+                        <a href class="dropdown-toggle">
+                            <span ng-if="level.active">{{ level.active.name }}</span>
+                            <span ng-if="!level.active">...</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li ng-repeat="taskforce in level.list">
+                                <a href ng-click="selectTaskforce(taskforce, level.idx)">{{ taskforce.name }}</a>
+                            </li>
+                        </ul>
+                    </span>
+                </span>
+            </span>
+        </div>
+        {% endverbatim %}
+
+        <!-- Right buttons -->
+        <div class="top-menu hidden-xs">
+            <ul class="nav pull-right top-menu">
+                {% verbatim %}<li><a class="button" target="_blank"
+                    ng-href="{{ currentUser.activeCourse.website_url }}" ng-if="currentUser.activeCourse.website_url"
+                >
+                    <span class="fa fa-external-link"></span>
+                    {{ currentUser.activeCourse.website_name ? currentUser.activeCourse.website_name : 'Course website' }}
+                </a></li>{% endverbatim %}
+                <li><a class="button" ui-sref="settings">
+                	<span class="fa fa-cog"></span> Settings
+                </a></li>
+                <li><a class="button" href="{% url 'webapp:logout' %}">
+                    <span class="fa fa-sign-out"></span> Logout
+                </a></li>
+            </ul>
+        </div>
+    </header>
+    
+    <!-- Sidebar -->
+    <aside>
+        <div id="sidebar" class="nav-collapse" ng-show="showSidebar" ng-controller="NavCtrl">
+            <ul class="sidebar-menu list-unstyled" id="nav-accordion">
+                <p class="centered">
+                    <a ui-sref="users.detail({userId:currentUser.id})">
+                        <img class="img-circle" user-picture="currentUser" size="small">
+                    </a>
+                </p>
+
+                <h5 class="centered">{% verbatim %}{{ currentUser.full_name }}{% endverbatim %}</h5>
+                  
+                <li class="mt">
+                    <a ui-sref="dashboard" ng-class="{ active: stateName == 'dashboard' }">
+                        <span class="fa fa-dashboard"></span> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a ui-sref="tasks" ng-class="{ active: stateName == 'tasks' }">
+                        <span class="fa fa-tasks"></span> <span>Tasks</span>
+                    </a>
+                </li>
+                <li>
+                    <a ui-sref="team" ng-class="{ active: stateName == 'team' }">
+                        <span class="fa fa-users"></span> <span>Team</span>
+                    </a>
+                </li>
+                <li>
+                    <a ui-sref="events" ng-class="{ active: stateName == 'events' }">
+                        <span class="fa fa-calendar"></span> <span>Events</span>
+                    </a>
+                </li>
+                <li>
+                    <a ui-sref="files" ng-class="{ active: stateName == 'files' }">
+                        <span class="fa fa-folder"></span> <span>Files</span>
+                    </a>
+                </li>
+                {% if perms.stats.can_view_stats %}
+                <li>
+                    <a ui-sref="stats" ng-class="{ active: stateName == 'stats' }">
+                        <span class="fa fa-bar-chart-o"></span> <span>Stats</span>
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Mobile only -->
+                <li class="visible-xs">
+                    <a ui-sref="settings" ng-class="{ active: stateName == 'settings' }">
+                        <span class="fa fa-cog"></span> <span>Settings</span>
+                    </a>
+                </li>
+                <li class="visible-xs">
+                    <a class="logout" href="{% url 'webapp:logout' %}">
+                        <span class="fa fa-sign-out"></span> <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Main -->
+    <section id="main-content" ng-class="{ nomargin: !showSidebar }">
+        <section ui-view class="wrapper">
+        </section>
+    </section>
+</section>
+
+<!-- Misc templates -->
+
+{% verbatim %}
+<script type="text/ng-template" id="error-dialog.html">
+    <div class="error-dialog">
+        <div class="modal-header">
+            <h3 class="modal-title">Error</h3>
+        </div>
+        <div class="modal-body">
+            <p class="alert alert-danger">{{ errorText }}</p>
+            <pre ng-if="errorDetail">{{ errorDetail }}</pre>
+            <iframe ng-srcdoc="errorDetailHtml" ng-if="errorDetailHtml"></iframe>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="close()">Close</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="components/user-picker.html">
+    <div class="form-group" ng-class="{ 'has-success': user }">
+        <input type="text" ng-model="user"
+            typeahead="user as user.full_name for user in search($viewValue) | filter:{full_name:$viewValue}"
+            typeahead-min-length="2"
+            typeahead-editable="false" 
+            typeahead-on-select="onSelectHandler($item, $model, $label)"
+            class="form-control">
+    </div>
+</script>
+
+<script type="text/ng-template" id="components/taskforce-picker.html">
+    <div class="form-group" ng-class="{ 'has-success': taskforce }">
+        <input type="text" ng-model="taskforce"
+            typeahead="taskforce as taskforce.name for taskforce in search($viewValue) | filter:{name:$viewValue}"
+            typeahead-min-length="2"
+            typeahead-editable="false" 
+            typeahead-on-select="onSelectHandler($item, $model, $label)"
+            class="form-control">
+    </div>
+</script>
+
+<script type="text/ng-template" id="components/time-from-now.html">
+    <time datetime="{{ isoTime }}" title="{{ time|date:'medium' }}">{{ fromNow }}</time>
+</script>
+
+<script type="text/ng-template" id="components/comments-section.html">
+    <div class="comments">
+        <div class="spinner-overlay" ng-show="loading > 0">
+            <spinner></spinner>
+        </div>
+        <form>
+            <textarea class="form-control" type="text" ng-model="newCommentBody"></textarea>
+            <button class="btn btn-sm btn-primary"
+                ng-click="postComment(newCommentBody); newCommentBody = ''"
+                ng-disabled="!newCommentBody">
+            Post</button>
+        </form>
+
+        <hr>
+
+        <button ng-if="!subscription" ng-click="subscribe()" class="btn btn-default">Subscribe</button>
+        <button ng-if="subscription" ng-click="unsubscribe()" class="btn btn-warning">Unsubscribe</button>
+
+        <p ng-if="comments.length === 0">
+            No-one has commented in this thread yet.
+        </p>
+        <div class="comment clearfix" ng-repeat="comment in comments">
+            <figure>
+                <img user-picture="comment.user" size="small">
+            </figure>
+            <div>
+                <div>
+                    <a ui-sref="users.detail({ userId: comment.user.id })">{{ comment.user.full_name }}</a>
+                    <span class="text-muted">&bull;
+                        <time-from-now time="comment.time"></time-from-now>
+                    </span>
+                </div>
+                <div class="body">{{ comment.body }}</div>
+            </div>
+        </div>
+
+        <a href ng-click="more()" ng-hide="!nextPageUrl">More...</a>
+    </div>
+</script>
+
+<script type="text/ng-template" id="events/calendar.html">
+    <div class="content-panel">
+        <div class="panel-body">
+            <div class="calendar-container">
+                <div class="spinner-overlay" ng-show="loading">
+                    <spinner></spinner>
+                </div>
+                <div ui-calendar="uiConfig.calendar" class="span8 calendar" ng-model="eventSources" calendar="{{ calendarId }}"></div> 
+                <div class="mt">
+                    <button class="btn btn-sm btn-success" ng-click="newEvent()">New event</button>
+                    <div class="pull-right">
+                        <button ng-if="showCustomize" ng-click="onCustomize()" class="btn btn-default">
+                            <span class="fa fa-cog"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="components/path-breadcrumbs.html">
+    <span ng-repeat="name in fragments">
+        <a href ng-if="!$last" ng-click="fragmentClicked($index)">{{ name }}</a>
+        <span ng-if="$last">{{ name }}</span>
+        <span ng-if="!$last"><span class="fa fa-angle-right"></span></span>
+    </span>
+</script>
+
+<script type="text/ng-template" id="components/file-picker.html">
+    <div class="form-group" ng-class="{ 'has-success': file }">
+        <input type="text" ng-model="file"
+            typeahead="file as file.path for file in search($viewValue) | filter:{path:$viewValue}"
+            typeahead-min-length="2"
+            typeahead-editable="false" 
+            class="form-control">
+    </div>
+</script>
+
+<script type="text/ng-template" id="components/progress-proportional.html">
+    <div class="progress">
+        <div class="progress-bar" ng-style="{ width: valuePct+'%' }">
+            <span>{{ value }}</span>
+        </div>
+        <div class="progress-bar progress-bar-invisible" ng-style="{ width: remainPct+'%' }">
+            <span>{{ remain }}</span>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="components/spinner.html">
+    <div class="spinner">
+        <span class="fa fa-spinner fa-pulse"></span>
+    </div>
+</script>
+
+{% endverbatim %}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+.project
+.pydevproject
+__pycache__
+*.pyc
+*.swp
+.sass-cache
+
+db.sqlite3
+apps/users/fixtures/*
+opencpm/settings/dropbox.py
+opencpm/settings/local.py
